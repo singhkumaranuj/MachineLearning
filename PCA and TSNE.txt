@@ -1,0 +1,139 @@
+1)Principal Component Analysis::
+PCA is an operation applied to a dataset, represented by an n x m matrix A that results in a projection of A which we will call B.
+
+The eigenvectors represent the directions or components for the reduced subspace of B, whereas the eigenvalues represent the magnitudes for the directions.
+The eigenvectors (principal components) determine the directions of the new feature space, and the eigenvalues determine their magnitude. In other words, 
+the eigenvalues explain the variance of the data along the new feature axes.
+The eigenvectors can be sorted by the eigenvalues in descending order to provide a ranking of the components or axes of the new subspace for A.
+
+If all eigenvalues have a similar value, then we know that the existing representation may already be reasonably compressed or dense and that the projection may offer little. 
+If there are eigenvalues close to zero, they represent components or axes of B that may be discarded.
+
+from numpy import array
+from sklearn.decomposition import PCA
+# define a matrix
+A = array([[1, 2], [3, 4], [5, 6]])
+1 2
+3 4
+5 6
+# create the PCA instance
+pca = PCA(2)
+# fit on data
+pca.fit(A)
+# access values and vectors
+print(pca.components_) ==> Eigen Vectors we are gettin here .
+[[ 0.70710678  0.70710678]
+ [-0.70710678  0.70710678]]
+print(pca.explained_variance_) ==> Eigen Values we are getting here.
+[8. 0.] 
+# transform data
+B = pca.transform(A) ==> here we can check only the first eigenvector is required, suggesting that we could project
+ our 3×2 matrix onto a 3×1 matrix with little loss.
+print(B)
+[[-2.82842712  0.      ]
+ [ 0.          0.        ]
+ [ 2.82842712  0.        ]]
+
+
+2) Summary of PCA::
+==> Standardize the data.
+==> Obtain the Eigenvectors and Eigenvalues from the covariance matrix or correlation matrix, or perform Singular Vector Decomposition.
+==> Sort eigenvalues in descending order and choose the k eigenvectors that correspond to the k largest eigenvalues where k is the number of dimensions of
+ the new feature subspace (K<d).
+==> Construct the projection matrix W from the selected k eigenvectors.
+==> Transform the original dataset X via W to obtain a k-dimensional feature subspace Y.
+==> The PCA class contains explained_variance_ratio_ which returns the variance caused by each of the principal components.
+==> The explained_variance variable is now a float type array which contains variance ratios for each principal component. 
+
+2.1)
+Limitations of PCA:::
+PCA is a linear algorithm. It will not be able to interpret complex polynomial relationship between features. On the other hand, t-SNE is based on 
+probability distributions with random walk on neighborhood graphs to find the structure within the data.
+
+A major problem with, linear dimensionality reduction algorithms is that they concentrate on placing dissimilar data points far apart in a lower
+ dimension representation. But in order to represent high dimension data on low dimension, non-linear manifold, it is important that similar datapoints
+ must be represented close together, which is not what linear dimensionality reduction algorithms do.
+
+Now, you have a brief understanding of what PCA endeavors to do.
+
+Local approaches seek to map nearby points on the manifold to nearby points in the low-dimensional representation. Global approaches on the other hand 
+attempt to preserve geometry at all scales, i.e mapping nearby points to nearby points and far away points to far away points  
+
+It is important to know that most of the nonlinear techniques other than t-SNE are not capable of retaining both the local and global structure of the 
+data at the same time.
+
+3)
+# Make a list of (eigenvalue, eigenvector) tuples
+eig_pairs = [(np.abs(eig_vals[i]), eig_vecs[:,i]) for i in range(len(eig_vals))]
+
+# Sort the (eigenvalue, eigenvector) tuples from high to low
+eig_pairs.sort()
+eig_pairs.reverse()
+
+# Visually confirm that the list is correctly sorted by decreasing eigenvalues
+print('Eigenvalues in descending order:')
+for i in eig_pairs:
+    print(i[0])
+
+3)
+1)
+Dimensionality reduction can be achieved in the following ways:
+
+Feature Elimination::
+ You reduce the feature space by eliminating features. This has a disadvantage though, as you gain no information from those features that you have dropped.
+
+Feature Selection::
+ You apply some statistical tests in order to rank them according to their importance and then select a subset of features for your work. This again 
+suffers from information loss and is less stable as different test gives different importance score to features. You can check more on this here.
+
+Feature Extraction::(PCA/T-SNE)
+ You create new INDEPENDENT features, where each new INDEPENDENT feature is a combination of each of the old independent features. These techniques can 
+further be divided into linear and non-linear dimensionality reduction techniques.
+
+
+2)
+ PCA is a linear dimension reduction technique that seeks to maximize variance and preserves large pairwise distances. In other words, things that are 
+different end up far apart. This can lead to poor visualization especially when dealing with non-linear manifold structures. Think of a manifold structure
+ as any geometric shape like: cylinder, ball, curve, etc.
+
+t-SNE differs from PCA by preserving only small pairwise distances or local similarities whereas PCA is concerned with preserving large pairwise distances 
+to maximize variance.
+t-SNE is non linear techique..
+
+3) t-SNE::
+The algorithms starts by calculating the probability of similarity of points in high-dimensional space and calculating the probability of similarity of 
+points in the corresponding low-dimensional space. The similarity of points is calculated as the conditional probability that a point A would choose 
+point B as its neighbor if neighbors were picked in proportion to their probability density under a Gaussian (normal distribution) centered at A.
+It then tries to minimize the difference between these conditional probabilities (or similarities) in higher-dimensional and lower-dimensional space for 
+a perfect representation of data points in lower-dimensional space.
+
+In simpler terms, t-Distributed stochastic neighbor embedding (t-SNE) minimizes the divergence between two distributions: a distribution that measures 
+pairwise similarities of the input objects and a distribution that measures pairwise similarities of the corresponding low-dimensional points in the 
+embedding.
+
+In this way, t-SNE maps the multi-dimensional data to a lower dimensional space and attempts to find patterns in the data by identifying observed clusters 
+based on similarity of data points with multiple features. However, after this process, the input features are no longer identifiable, and you cannot make 
+any inference based only on the output of t-SNE. Hence it is mainly a data exploration and visualization technique.
+
+4)how tsne works::
+Step 1, measure similarities between points in the high dimensional space. Think of a bunch of data points scattered on a 2D space (Figure 2). For each 
+data point (xi) we’ll center a Gaussian distribution over that point. Then we measure the density of all points (xj) under that Gaussian distribution. Then 
+renormalize for all points. This gives us a set of probabilities (Pij) for all points. Those probabilities are proportional to the similarities. All that 
+means is, if data points x1 and x2 have equal values under this Gaussian circle then their proportions and similarities are equal and hence you have local 
+similarities in the structure of this high-dimensional space. The Gaussian distribution or circle can be manipulated using what’s called perplexity, which 
+influences the variance of the distribution (circle size) and essentially the number of nearest neighbors. Normal range for perplexity is between 5 and 
+50 [2].
+
+Step 2 is similar to step 1, but instead of using a Gaussian distribution you use a Student t-distribution with one degree of freedom, which is also known 
+as the Cauchy distribution (Figure 3). This gives us a second set of probabilities (Qij) in the low dimensional space. As you can see the Student
+ t-distribution has heavier tails than the normal distribution. The heavy tails allow for better modeling of far apart distances.
+
+The last step is that we want these set of probabilities from the low-dimensional space (Qij) to reflect those of the high dimensional space (Pij) as best 
+as possible. We want the two map structures to be similar. We measure the difference between the probability distributions of the two-dimensional spaces 
+using Kullback-Liebler divergence (KL). I won’t get too much into KL except that it is an asymmetrical approach that efficiently compares large Pij and Qij 
+values. Finally, we use gradient descent to minimize our KL cost function.
+
+https://www.datacamp.com/community/tutorials/introduction-t-sne
+
+
+
